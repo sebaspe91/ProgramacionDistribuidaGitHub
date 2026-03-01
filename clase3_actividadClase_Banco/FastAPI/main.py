@@ -23,16 +23,19 @@ contador_clientes = 0  # Lleva la cuenta total de clientes creados
 def home():
     return {"Mensaje": "API del Banco funcionando"}
 
+
 # CREAR CLIENTE (CON DELAY ASÍNCRONO Y VALIDACIÓN)
 @app.post("/clientes") # le dice a FastAPI q esta funcion responde a peticiones HTTP de tipo POST
 async def crear_cliente(nombre: str):  # Cambiamos a async para poder usar await
+
+    # global: Indica que vamos a modificar una variable definida FUERA de la función
     global contador_clientes
     
     # 3. Validación básica (no permitir nombre vacío)
     if not nombre or nombre.strip() == "":
-        raise HTTPException(
-            status_code=400,
-            detail="El nombre no puede estar vacío"
+        raise HTTPException( # raise HTTPException => lanza un error controlado
+            status_code=400, # error del cliente
+            detail="El nombre no puede estar vacío" # mensaje descriptivo del erro
         )
     
     # 5. Simulación de delay asíncrono de 3 segundos
@@ -50,7 +53,7 @@ async def crear_cliente(nombre: str):  # Cambiamos a async para poder usar await
     # Guardar en base datos simulada
     clientes.append(cliente)
     
-    # Retornamos cliente creado + información del contador
+    # Retornamos cliente creado + información del contador tipo JSON
     return {
         "cliente": cliente,
         "total_clientes_creados": contador_clientes,
@@ -58,8 +61,11 @@ async def crear_cliente(nombre: str):  # Cambiamos a async para poder usar await
     }
 
 # LISTAR CLIENTES
+
+# Dict => Esta función va a devolver un DICCIONARIO
+# Las llaves serán de tipo str (texto)   ===== Los valores pueden ser de cualquier tipo (Any)
 @app.get("/clientes", response_model=Dict[str, Any])
-def listar_clientes():
+def listar_clientes(): # Función síncrona (no necesita async porque no espera nada)
     return {
         "clientes": clientes,
         "total_registrados": len(clientes),
@@ -70,28 +76,31 @@ def listar_clientes():
 @app.get("/clientes/{cliente_id}")
 def obtener_cliente(cliente_id: int):
     for cliente in clientes:
-        if cliente["id"] == cliente_id:
+        if cliente["id"] == cliente_id: # en el objeto cliente solo id
             return cliente
     
+    # Manejo de cliente no encontrado
     raise HTTPException(
-        status_code=404,
+        status_code=404, # No encontrado
         detail=f"Cliente con ID {cliente_id} no encontrado"
     )
 
 # 1. Endpoint DELETE para eliminar cliente
 @app.delete("/clientes/{cliente_id}")
 def eliminar_cliente(cliente_id: int):
+    # enumerate(): Función que permite iterar obteniendo tanto el índice (i) como el valor (cliente)
     for i, cliente in enumerate(clientes):
         if cliente["id"] == cliente_id:
-            cliente_eliminado = clientes.pop(i)
+            cliente_eliminado = clientes.pop(i) # Elimina el cliente
             return {
                 "mensaje": f"Cliente {cliente_eliminado['nombre']} eliminado exitosamente",
                 "cliente_eliminado": cliente_eliminado,
                 "clientes_restantes": len(clientes)
             }
     
+    # si no hay coicidencia
     raise HTTPException(
-        status_code=404,
+        status_code=404, # No encontrado
         detail=f"Cliente con ID {cliente_id} no encontrado para eliminar"
     )
 
