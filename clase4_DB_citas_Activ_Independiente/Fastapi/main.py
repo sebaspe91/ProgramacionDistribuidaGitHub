@@ -191,4 +191,56 @@ async def reactiva_cita(id : int):
 
         return {"mensaje": "Cita reactivada correctamente"}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error al cancelar cita: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error al reactivar cita: {str(e)}")
+    
+############  TRABAJO INDEPENDIENTE ##############################
+
+# actualizar fecha
+@app.put("/actualizar_fecha/{id}")
+async def actualizar_fecha(id : int, fehca : str):
+    try:
+        conn = await get_connection()
+        cursor = await conn.cursor()
+
+        query = f"UPDATE citas SET fecha='{fehca}' WHERE id={id}"
+        await cursor.execute(query)
+        await conn.commit()
+
+        if cursor.rowcount == 0:
+            raise HTTPException(
+                status_code=404, 
+                detail="Cita no encontrada"
+            )
+        
+        await cursor.close()
+        conn.close()
+
+        return {"mensaje" : "Fecha actualizada correctamente"}
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error al actualizar fecha de la cita: {str(e)}")
+    
+
+# NOTA: CANCELAR CITA YA ESTA MAS ARRIBA
+
+# listar cita por fecha
+@app.get("/listar_fecha/{fecha}")
+async def listar_cita_fecha(fecha: str):
+    try:
+        conn = await get_connection()
+        cursor = await conn.cursor()
+
+        query = "SELECT * FROM citas WHERE fecha = %s"
+        await cursor.execute(query, (fecha,))
+        citas = await cursor.fetchall()
+
+        await cursor.close()
+        conn.close()
+
+        if not citas:
+            raise HTTPException(status_code=404, detail="No se encontraron citas para esta fecha")
+        
+        return citas
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error al encontrar la fecha de la cita: {str(e)}")
