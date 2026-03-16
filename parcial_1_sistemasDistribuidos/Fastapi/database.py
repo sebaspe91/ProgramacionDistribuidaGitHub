@@ -3,11 +3,11 @@
 import aiomysql
 
 DB_CONFIG = {
-    "host": "localhost",
+    "host": "172.22.73.188",
     "port": 3306,
-    "user": "root",
-    "password": "",
-    "db": "citas_db",
+    "user": "grupo3",
+    "password": "1234",
+    "db": "citas_medicas",
     "autocommit": False  # Recomendado para tener control sobre commits
 }
 
