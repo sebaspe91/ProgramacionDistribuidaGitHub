@@ -20,23 +20,9 @@ async def incrementar():
         return {"contador": contador}
 
 
-# ENDPOINT VER CONTROLADOR
-@app.get("/contador")
-async def ver_contador():
-    return {"contador" : contador}
-
-
 # Para no detener el servidor y realizar las pruebas de tiempo real
 @app.post("/reset")
 async def resetear_contador():
     global contador # variable global compartida
-
-    async with lock: # Tambien se protege el reset
-        valor_anterior = contador
-        contador = 0 # reiniciamos el valor
-
-    return {
-        "mensaje": "Contador reinicado", 
-        "valor_anterior" : valor_anterior,
-        "contador_actual" : contador
-    }
+    contador = 0 # reiniciamos el valor
+    return {"mensaje": "Contador reinicado", "contador" : contador}
